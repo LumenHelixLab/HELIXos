@@ -33,6 +33,18 @@ OBSERVE → INTERPRET → ACT → VERIFY → RECORD
   * human handoff conditions and Tactical HUD requirements
   * the live acceptance standard for browser, terminal, and integration features
   * system status labels (Specified → Production-Ready, Blocked, Not Implemented)
+* [Core Development Multi-Agent Planning Team (v2.0)](docs/specs/core-dev-planning-team.md) — the planning layer ("prefrontal cortex") that decomposes Council-approved ledgers into verified plans, covering:
+  * the Overseer (Lead Architect) and the four domain planners (frontend, backend, database, API)
+  * the OG feature stack: Obsidian Cognitive UI, KNOTstore, Triangulated Instruction Bus, Variance Gateway, Tactical HUD, Pipeline Council integration
+  * the four-phase planning lifecycle (decomposition → triangulation → variance gateway & HITL → plan approval)
+  * executive modes (`manual`, `proxy-ceo`), Canvas node colour semantics, and model-registry auditing
+  * team configuration YAML, security invariants, and validation tests
+
+The planning team produces plans only; execution is handed off to the Digital Operator layer governed by the Live-Operation Directive.
+
+## Design Notes
+
+* [Core Dev Planning Team — Analysis & Design Notes](docs/design/core-dev-planning-team-notes.md) — gap analysis of the v2.0 spec with proposed resolutions (pointer namespace scoping, variance threshold semantics, dependency DAG via Canvas edges, verb registry extensions, key management) and open questions for the Council.
 
 ## System Status Labels
 
