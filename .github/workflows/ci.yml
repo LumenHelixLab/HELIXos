@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate2:
+    name: Gate 2 conformance + fault-injection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pinned dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run the Gate 2 test suite
+        run: pytest -q
+
+      - name: Run the end-to-end demo (smoke)
+        run: python -m helix_gate.demo

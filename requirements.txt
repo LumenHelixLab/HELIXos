@@ -1,0 +1,6 @@
+# HELIXos Gate 2 (helix_gate) runtime + test dependencies.
+# Pinned to versions verified in the target environment.
+wasmtime==46.0.1
+cryptography>=41.0.7
+cffi>=1.15            # backend required by cryptography's Ed25519 bindings
+pytest>=9.1

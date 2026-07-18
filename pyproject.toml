@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# Make the repo root importable so `import helix_gate` works under pytest.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"
