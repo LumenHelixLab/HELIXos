@@ -1,0 +1,58 @@
+[
+  {
+    "label": "Gate 2 execution boundary",
+    "keywords": ["gate 2", "gate2", "execution boundary", "executiongate", "helix_gate"],
+    "priority_file": "helix_gate/README.md",
+    "priority_lines": 60,
+    "files": ["docs/GATES.md"]
+  },
+  {
+    "label": "HX1 envelope (schema / signature / canonical)",
+    "keywords": ["hx1", "envelope", "signature", "canonical", "ed25519", "keyring"],
+    "priority_file": "helix_gate/hx1/schema.py",
+    "priority_lines": 80,
+    "files": ["helix_gate/hx1/signature.py", "helix_gate/hx1/canonical.py"]
+  },
+  {
+    "label": "validation pipeline / policy / reason codes",
+    "keywords": ["validation", "pipeline", "policy", "reason code", "capability", "replay", "sequence"],
+    "priority_file": "helix_gate/validation.py",
+    "priority_lines": 80,
+    "files": ["helix_gate/policy.py", "helix_gate/errors.py"]
+  },
+  {
+    "label": "sandbox worker / cancellation / resource limits",
+    "keywords": ["sandbox", "worker", "cancel", "cancellation", "fuel", "epoch", "wasmtime", "trap"],
+    "priority_file": "helix_gate/sandbox/controller.py",
+    "priority_lines": 80,
+    "files": ["helix_gate/sandbox/worker.py"]
+  },
+  {
+    "label": "lifecycle / registry / audit log",
+    "keywords": ["lifecycle", "registry", "audit", "state machine", "fsm"],
+    "priority_file": "helix_gate/registry.py",
+    "priority_lines": 60,
+    "files": ["helix_gate/lifecycle.py", "helix_gate/audit.py"]
+  },
+  {
+    "label": "architecture specification (TEN², four tiers)",
+    "keywords": ["specification", "architecture", "ten2", "ten^2", "ten-squared", "four-tier", "akash", "babel"],
+    "priority_file": "docs/SPECIFICATION.md",
+    "priority_lines": 80,
+    "files": []
+  },
+  {
+    "label": "agent taxonomy (Quaternity / deities / tiers)",
+    "keywords": ["quaternity", "natasha", "charlotte", "krishna", "kali", "taxonomy", "persona"],
+    "priority_file": "docs/SPECIFICATION.md",
+    "priority_lines": 120,
+    "files": ["AGENTS.md"]
+  },
+  {
+    "label": "contributing / testing / verification",
+    "keywords": ["contributing", "how do i test", "run the tests", "verify", "fault injection", "conformance"],
+    "priority_file": "CONTRIBUTING.md",
+    "priority_lines": 80,
+    "files": ["AGENTS.md"]
+  }
+]
