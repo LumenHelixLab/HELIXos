@@ -1,0 +1,39 @@
+name: Feature / component proposal
+description: Propose implementing a specified component, or an enhancement to Gate 2
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        HELIXos turns regions of the specification into verified code one gate at
+        a time. Proposals to implement a spec component are very welcome — they
+        must land with a conformance + fault-injection test suite.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Enhancement to Gate 2 (helix_gate/)
+        - Implement a specified component (kernel / IRC / babel / agents)
+        - Documentation / specification precision
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should exist, and what's the smallest useful version?
+    validations:
+      required: true
+  - type: textarea
+    id: basis
+    attributes:
+      label: Verifiable basis
+      description: >
+        For implementing spec math/behavior, what's the source of truth (paper,
+        RFC, reference impl)? Components without a verifiable basis are declined.
+  - type: textarea
+    id: testing
+    attributes:
+      label: How would it be tested?
+      description: What conformance and fault-injection cases would prove it works?

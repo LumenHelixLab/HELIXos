@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/LumenHelixLab/HELIXos/security/advisories/new
+    about: Report Gate 2 trust-boundary weaknesses privately — see SECURITY.md.
+  - name: Architecture & specification
+    url: https://github.com/LumenHelixLab/HELIXos/blob/main/docs/SPECIFICATION.md
+    about: The v3.0 Master Engineering Handoff — read before proposing components.

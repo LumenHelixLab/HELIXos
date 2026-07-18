@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a defect in the implemented Gate 2 boundary (helix_gate/)
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Only `helix_gate/` is implemented. Bugs in the specification stubs
+        (kernel, IRC, babel, agents) aren't defects — they're unimplemented.
+        For anything that could weaken the execution boundary, use
+        [SECURITY.md](../../SECURITY.md) instead of a public issue.
+  - type: input
+    id: component
+    attributes:
+      label: Component / file
+      description: e.g. helix_gate/sandbox/controller.py
+      placeholder: helix_gate/...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal steps — ideally an HX1 envelope / Wasm module and how you submitted it.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: What GateResult / outcome / reason code did you expect, and what did you get?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit / version
+      description: git rev-parse --short HEAD
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Python + OS
+      description: e.g. Python 3.11 on Ubuntu 24.04; wasmtime version from pip show wasmtime
+    validations:
+      required: true
