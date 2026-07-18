@@ -24,6 +24,12 @@ execution (Kernel) and memory (AKASH).
   `L = (2 3 4 6 5 8 7 9)` of order 8 and involution `δ = L⁴`.
 - **Function:** Handles the low-level "physics" of the system inside Wasm
   microVMs at millisecond speeds.
+- **Execution boundary (Gate 2):** Modules are executed only through the
+  hardened Wasm adapter in [`helix_gate/`](../helix_gate) — see
+  [`docs/GATES.md`](GATES.md). The guest receives **no host authority except the
+  capabilities explicitly declared in a signed HX1 manifest and supplied by the
+  adapter**; containment is enforced by running each guest in a disposable worker
+  process under fuel/epoch/memory/output limits, not by the runtime alone.
 - **Temporal Sync:** Synchronized by the **840-Tick Micro-Clock** for real-time
   computational steps and the **10,920-Tick Meso-Clock** (I Ching) for
   macro-epochs.
@@ -164,12 +170,26 @@ HELIXos/
 │   ├── state_delta.json       # Asynchronous visual telemetry for the HUD
 │   ├── Council_Ledgers.md     # Final synthesis reports from Kali
 │   └── Agents/Ronin_Archive/  # Dormant agent skill-trees
-└── agents/                    # LLM Wrappers (LangGraph / LiteLLM)
-    ├── natasha_agent.py       # Red Spider API Gateway Defense
-    ├── charlotte_agent.py     # Green Context Weaver
-    ├── kali_arbiter.py        # Purple Synthesizer
-    └── x_men_mutators.py      # Irregular logic / prompt structures
+├── agents/                    # LLM Wrappers (LangGraph / LiteLLM)
+│   ├── natasha_agent.py       # Red Spider API Gateway Defense
+│   ├── charlotte_agent.py     # Green Context Weaver
+│   ├── kali_arbiter.py        # Purple Synthesizer
+│   └── x_men_mutators.py      # Irregular logic / prompt structures
+└── helix_gate/                # Gate 2 — hardened Wasm execution adapter (IMPLEMENTED)
+    ├── hx1/                    # HX1 envelope: schema, canonical bytes, Ed25519
+    ├── validation.py          # Ordered validation pipeline
+    ├── policy.py              # Policy revision + capability manifest
+    ├── module_resolver.py     # knot:// resolution + sha256 digest binding
+    ├── sandbox/               # Disposable Wasmtime worker + cancel controller
+    ├── lifecycle.py           # Deterministic state machine
+    ├── registry.py            # Durable SQLite registry (atomic CAS)
+    ├── audit.py               # Signed, hash-chained audit log
+    └── adapter.py             # ExecutionGate orchestrator
 ```
+
+> **Gate 2 is implemented and tested** (48 conformance + fault-injection tests).
+> See [`docs/GATES.md`](GATES.md) for the gate model and the reviewer
+> disposition. The kernel/IRC/babel/agent trees remain documented stubs.
 
 ---
 
@@ -199,9 +219,15 @@ Triangulated Bus guarantees zero-trust execution. Ready for Phase 1
 
 ## Implementation Status
 
-This repository currently contains the **specification** plus a **directory
-scaffold** mirroring §5. Each Python module is a documented stub that raises
-`NotImplementedError` and records its intended contract. No kernel math,
-error-correction algorithm, or cryptographic behavior described above has been
-implemented or verified yet — these stubs mark where verified implementations go.
-See each package's `README.md` for its build order and open questions.
+One boundary is **implemented and tested**: **Gate 2**, the hardened Wasm
+execution adapter in [`helix_gate/`](../helix_gate) — real Ed25519 signature
+verification, replay protection, capability enforcement, process-isolated
+execution with fuel/epoch/memory/output limits, interruptible cancellation, a
+durable lifecycle registry, and a signed hash-chained audit log, under 48
+conformance + fault-injection tests. See [`docs/GATES.md`](GATES.md).
+
+The remaining trees (`aigent-os-kernel/`, `helix-irc-dmz/`, `babel-tower/`,
+`agents/`) are still documented stubs that raise `NotImplementedError` and record
+their intended contract; no kernel math, error-correction algorithm, or IRC/agent
+behavior there has been implemented or verified yet. See each package's
+`README.md` for build order and open questions.

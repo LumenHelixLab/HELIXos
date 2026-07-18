@@ -4,6 +4,12 @@ The reversible-state foundation. Handles the low-level "physics" of the system.
 See [`docs/SPECIFICATION.md` §1](../docs/SPECIFICATION.md#layer-1--the-cognitive-engine-ten) and
 [§6](../docs/SPECIFICATION.md#6-mathematical-sources--dependencies-reference-log).
 
+> **Execution boundary:** modules run only through **Gate 2**, the hardened Wasm
+> execution adapter in [`../helix_gate/`](../helix_gate) (implemented + tested —
+> see [`docs/GATES.md`](../docs/GATES.md)). The modules below are the reversible
+> math/error-correction core the guest code implements; they remain documented
+> stubs pending the source paper.
+
 ## Modules
 
 | File | Responsibility |
