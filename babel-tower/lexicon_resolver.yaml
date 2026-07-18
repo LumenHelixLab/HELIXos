@@ -1,0 +1,70 @@
+# HELIXos Lexicon Resolver
+# Maps the agent taxonomy (SPECIFICATION.md §2) to logic domains, and the
+# linguistic gears (§3) to their transport role. This file is descriptive
+# configuration derived directly from the spec; it carries no unverified claims.
+
+version: "3.0"
+
+# §2.1 — The Quaternity (orchestrators)
+quaternity:
+  natasha:
+    color: red
+    role: security_disruptor
+    domain: api_gateway_defense
+    signature: "0x18 CANCEL lock-down; chaos injection"
+    module: agents/natasha_agent.py
+  charlotte:
+    color: green
+    role: context_weaver
+    domain: genome_parsing
+    signature: "recontextualization; structural advantage discovery"
+    module: agents/charlotte_agent.py
+  krishna:
+    color: blue
+    role: manifestor_avatar
+    domain: owner_interface
+    signature: "native channel-spawn write access"
+    module: null  # avatar surfaced through babelfish.py, not a standalone agent
+  kali:
+    color: purple
+    role: synthesis_arbiter
+    domain: consensus_and_memory_compaction
+    signature: "authors Council_Ledgers.md"
+    module: agents/kali_arbiter.py
+
+# §2.2 — Swarm hierarchy (taxonomy -> tier semantics)
+swarm_hierarchy:
+  nucleus:
+    taxonomy: deities            # Hindu, Greek, Egyptian, Yoruba
+    lifetime: long_running
+    role: immutable_law_arbiters
+  mutation_tier:
+    taxonomy: x_men              # Professor X, Beast, Cyclops
+    lifetime: injected
+    role: high_chaos_frontier_logic
+    module: agents/x_men_mutators.py
+  workforce:
+    taxonomy: avengers           # Stark, Vision, Rocket
+    lifetime: standard
+    role: disciplined_executors
+  muscle:
+    taxonomy: lotr_brood         # Ungoliant, Shelob, Mirkwood, Nazgul
+    lifetime: ephemeral
+    role: raw_throughput_subprocesses
+  cold_storage:
+    taxonomy: ronin
+    lifetime: dormant
+    role: serialized_state_vectors
+    location: obsidian-brain/Agents/Ronin_Archive/
+
+# §3 — Linguistic gears (transport role of each encoding)
+linguistic_gears:
+  html:            { role: macro_goal_keeper, artifact: obsidian-brain/genome.html }
+  json_gregg:      { role: human_readable_transcription }
+  triangulated_bus: { role: execution_protocol, shape: "[ Ptr | Verb | Hash ]" }
+  lower_ascii:     { role: reflex_handshakes, cancel_byte: 0x18 }
+  afsk_56k:        { role: parallel_state_transfer }
+  hangul:          { role: e8_spatial_routing_hash }
+  braille:         { role: boolean_flag_matrix }
+  hex_color:       { role: three_axis_coordinate_vector }
+  i_ching:         { role: kernel_mutation_opcode, count: 64 }

@@ -1,0 +1,10 @@
+{
+  "$comment": "Asynchronous visual telemetry for the HUD (spec §1 Layer 4, §6 item 4). Rendered by the Obsidian MCP Server. This is a seed with an empty delta stream.",
+  "version": "3.0",
+  "epoch": 0,
+  "micro_tick": 0,
+  "meso_tick": 0,
+  "active_channels": [],
+  "agent_states": [],
+  "deltas": []
+}
