@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://helixos.local/schemas/helixos.schema.json",
+  "title": "HELIXos node configuration",
+  "description": "Validates configs/helixos.yaml (SPEC §3.10; audit §7 item 7 / AUD-H8). Secrets are env-only and therefore intentionally absent from this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["config_version", "node", "journal", "signing", "knotcore", "sidecar", "possession", "irc", "channel_registry"],
+  "properties": {
+    "config_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version of this config file."
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "log_level"],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,62}$",
+          "description": "Stable node identity used in logs and audit records."
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+          "description": "stdlib logging level; HELIXOS_LOG_LEVEL env overrides."
+        }
+      }
+    },
+    "journal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "fsync_on_append", "snapshot_interval_events", "snapshot_max_age_hours"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Append-only JSONL journal path; HELIXOS_JOURNAL_PATH env overrides."
+        },
+        "fsync_on_append": {
+          "type": "boolean",
+          "description": "fsync per append (SPEC §3.7 durability guarantee)."
+        },
+        "snapshot_interval_events": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Snapshot marker cadence in events (ADR-001 §2.3)."
+        },
+        "snapshot_max_age_hours": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Snapshot marker maximum age in hours; bounds replay time."
+        }
+      }
+    },
+    "signing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "max_clock_skew_s"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["hmac_dev", "ed25519"],
+          "description": "hmac_dev = dev/CI only; ed25519 = production (ADR-004). Keys are env-only (HELIXOS_HMAC_KEY / HELIXOS_ED25519_SK)."
+        },
+        "max_clock_skew_s": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Freshness-envelope skew window in seconds (SPEC §2 MAX_CLOCK_SKEW_S)."
+        }
+      }
+    },
+    "knotcore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "capacity"],
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": ["sim", "sidecar"],
+          "description": "sim = in-process reference simulator; sidecar = out-of-process Unix-socket RPC (ADR-002)."
+        },
+        "capacity": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Write-once slot capacity; exhaustion raises StoreFull (ADR-004 §2)."
+        }
+      }
+    },
+    "sidecar": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["socket_path", "call_timeout_s", "breaker_threshold", "breaker_reset_s", "abi_version"],
+      "properties": {
+        "socket_path": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "Absolute Unix-socket path; HELIXOS_SIDECAR_SOCKET env overrides."
+        },
+        "call_timeout_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Per-call socket deadline in seconds (SPEC §3.4)."
+        },
+        "breaker_threshold": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Consecutive errors before the circuit breaker opens."
+        },
+        "breaker_reset_s": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Open duration in seconds before the half-open probe."
+        },
+        "abi_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Expected ABI version from the health() handshake."
+        }
+      }
+    },
+    "possession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bind_agent", "rate_limit_attempts", "rate_limit_window_s"],
+      "properties": {
+        "bind_agent": {
+          "type": "string",
+          "const": "KRISHNA",
+          "description": "KRISHNA-only possession binding (SPEC §3.6)."
+        },
+        "rate_limit_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Possess attempts allowed per window (SPEC §3.6: 5)."
+        },
+        "rate_limit_window_s": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Rate-limit window in seconds (SPEC §3.6: 300)."
+        }
+      }
+    },
+    "irc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host", "port", "tls", "nickname", "realname", "sasl", "reconnect"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Ergo daemon host (ADR-003)."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "tls": {
+          "type": "boolean",
+          "description": "TLS mandatory for any non-localhost deployment (ADR-003 §2.3)."
+        },
+        "nickname": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_\\-\\[\\]`^{}|]{0,30}$"
+        },
+        "realname": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "sasl": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "account"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "account": {
+              "type": "string",
+              "minLength": 1,
+              "description": "SASL account name; the password is env-only and never in config."
+            }
+          }
+        },
+        "reconnect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_backoff_s"],
+          "properties": {
+            "max_backoff_s": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Reconnect backoff cap in seconds (with jitter)."
+            }
+          }
+        }
+      }
+    },
+    "channel_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["partitions", "channels"],
+      "properties": {
+        "partitions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["thought", "thinking"],
+          "properties": {
+            "thought": { "$ref": "#/$defs/partition" },
+            "thinking": { "$ref": "#/$defs/partition" }
+          }
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/channel" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "partition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prefix", "actionable"],
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "pattern": "^#[A-Za-z][A-Za-z0-9-]*-$",
+          "description": "Channel-name prefix defining the class (glossary §5.1)."
+        },
+        "actionable": {
+          "type": "boolean",
+          "description": "Thought = actionable after verification; Thinking = never dispatched."
+        }
+      }
+    },
+    "channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "class", "purpose", "persistent", "acl", "rate_limit"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^#(t-|think-)[a-z0-9-]{1,32}$"
+        },
+        "class": {
+          "type": "string",
+          "enum": ["thought", "thinking"]
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "persistent": {
+          "type": "boolean",
+          "description": "Persistent (true) vs TTL'd per-task channel (false) — AUD-M8."
+        },
+        "acl": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "nicks", "may"],
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["spider", "god", "owner", "vault-bridge"]
+              },
+              "nicks": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9-]{0,30}$"
+                }
+              },
+              "may": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": ["read", "write"]
+                }
+              }
+            }
+          }
+        },
+        "rate_limit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["tokens", "window_s"],
+          "properties": {
+            "tokens": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Per-sender token-bucket size (audit AUD-M7)."
+            },
+            "window_s": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Token-bucket refill window in seconds."
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "class": { "const": "thought" } }, "required": ["class"] },
+          "then": { "properties": { "name": { "pattern": "^#t-" } } }
+        },
+        {
+          "if": { "properties": { "class": { "const": "thinking" } }, "required": ["class"] },
+          "then": { "properties": { "name": { "pattern": "^#think-" } } }
+        }
+      ]
+    }
+  }
+}
