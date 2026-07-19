@@ -1,0 +1,128 @@
+# =============================================================================
+# HELIXos node configuration — M0 (owner: Agent E; SPEC §3.10; audit §7 item 7
+# / AUD-H8). Validated by configs/helixos.schema.json (JSON Schema 2020-12).
+#
+# Every value in this file is real and directly usable. SECRETS ARE NEVER IN
+# THIS FILE — they come from the environment only (SPEC §3.10):
+#   HELIXOS_HMAC_KEY       hex, >=32 bytes  (signing.mode=hmac_dev; dev/CI only)
+#   HELIXOS_ED25519_SK     hex, 32-byte raw seed (signing.mode=ed25519; sequencer only)
+#   HELIXOS_OWNER_TOKEN    owner possession token (hashed via KrishnaManifestor.hash_token)
+# Env vars also override the file values marked "env override" below.
+# =============================================================================
+
+config_version: 1
+
+node:
+  node_id: helix-node-0        # stable identity of this node; appears in logs/audit
+  log_level: INFO              # DEBUG|INFO|WARNING|ERROR|CRITICAL; env override: HELIXOS_LOG_LEVEL
+
+# --- System of record (ADR-001; SPEC §3.7) -----------------------------------
+journal:
+  path: ./helixos-journal.jsonl   # append-only JSONL, hash-chained; env override: HELIXOS_JOURNAL_PATH
+  fsync_on_append: true           # durability guarantee per SPEC §3.7; never disable in prod
+  snapshot_interval_events: 10000 # snapshot marker at least every N events (ADR-001 §2.3)
+  snapshot_max_age_hours: 24      # ...or this age, whichever comes first; bounds replay time
+
+# --- Bus signing (ADR-004; SPEC §3.1, §3.10) ---------------------------------
+signing:
+  mode: hmac_dev             # hmac_dev | ed25519. hmac_dev = dev/CI ONLY (every verifier
+                             # is also a forger); ed25519 = production (public-key verifiers).
+                             # Boot-time policy per ADR-004 §4.3: production MUST run ed25519.
+  max_clock_skew_s: 300      # freshness-envelope skew window (SPEC §2, MAX_CLOCK_SKEW_S)
+  # Keys: env only, never here — see header. HMAC key >=32 bytes; Ed25519 seed 32 bytes.
+
+# --- KNOTstore (ADR-002/ADR-004; SPEC §3.2) ----------------------------------
+knotcore:
+  backend: sim               # sim = in-process reference simulator (knotcore_sim.py);
+                             # sidecar = out-of-process via Unix socket (sidecar_client.KnotClient)
+  capacity: 65536            # 2**16 write-once slots (ADR-004 §2); exhaustion raises StoreFull
+
+# --- knotcore sidecar (ADR-002; SPEC §3.4) -----------------------------------
+sidecar:
+  socket_path: /tmp/helixos-knotcore.sock  # Unix socket; env override: HELIXOS_SIDECAR_SOCKET.
+                                           # systemd unit uses /run/helixos/knotcore.sock.
+  call_timeout_s: 2.0        # per-call deadline (socket timeout) — a hung store is a typed
+                             # Unavailable, never an unbounded block
+  breaker_threshold: 5       # consecutive errors before the circuit breaker opens
+  breaker_reset_s: 30        # open duration before half-open probe
+  abi_version: 1             # expected ABI from health() handshake; mismatch = boot-time error
+
+# --- Owner possession (ADR-001/audit AUD-M4; SPEC §3.6) -----------------------
+possession:
+  bind_agent: KRISHNA        # only agent possession may bind to (KRISHNA-only construction)
+  rate_limit_attempts: 5     # failed/successful possess attempts allowed per window...
+  rate_limit_window_s: 300   # ...per this many seconds (SPEC §3.6: 5 per 300 s)
+  # Owner token: env only (HELIXOS_OWNER_TOKEN), never here; stored/processed hashed.
+
+# --- IRC bus transport (Ergo; ADR-003; activates at M2) -----------------------
+# M0/M1 run the bus in-process; this block is the real connection profile for a
+# local Ergo daemon (default non-TLS localhost listener) used for M2 bring-up.
+irc:
+  host: 127.0.0.1
+  port: 6667                 # Ergo default plaintext listener, localhost only
+  tls: false                 # M2 mandate: TLS + SASL required before any non-localhost
+                             # deployment (ADR-003 §2.3); then port 6697, tls: true
+  nickname: helix-agent-0
+  realname: HELIXos M0 node
+  sasl:
+    enabled: false           # enable with TLS at M2; account names bound to agent nicks
+    account: helix-agent-0
+    # SASL password is a secret: environment only, NEVER in this file.
+  reconnect:
+    max_backoff_s: 60        # reconnect-with-jitter policy (audit §7 M2); base 1 s, capped here
+
+# --- Channel registry sketch (glossary §5.1–5.2; audit AUD-M8) ----------------
+# Every channel is exactly one of two classes. The partition is authoritative;
+# +mode is only ever a presentation hint, never an authorization source.
+channel_registry:
+  partitions:
+    thought:                 # machine-actionable; carries Triangulated Bus lines + BABEL commands
+      prefix: "#t-"
+      actionable: true       # a line is actionable ONLY after the full verification pipeline
+    thinking:                # deliberative prose; never dispatched, never quoted into a command
+      prefix: "#think-"
+      actionable: false
+  channels:
+    - name: "#t-gateway"     # well-known ingress Thought channel (glossary §5.2)
+      class: thought
+      purpose: single monitored ingress for external/API requests; every posted line still
+               passes the full verification pipeline before any action
+      persistent: true
+      acl:
+        - role: spider       # NATASHA, CHARLOTTE — primary subscribers, API request handling
+          nicks: [NATASHA, CHARLOTTE]
+          may: [read, write]
+        - role: god          # KALI, KRISHNA — observe only; no request origination here
+          nicks: [KALI, KRISHNA]
+          may: [read]
+        - role: owner        # human owner console — read-only oversight
+          nicks: [owner]
+          may: [read]
+        - role: vault-bridge # sole Obsidian writer; subscribes to render journal-derived views
+          nicks: [vault-bridge]
+          may: [read]
+      rate_limit:            # per-sender token bucket (audit AUD-M7)
+        tokens: 10
+        window_s: 60
+    - name: "#think-council" # God-agent deliberation, Thinking class (non-authoritative)
+      class: thinking
+      purpose: KALI/KRISHNA deliberation rendered into Council_Ledgers.md by vault-bridge;
+               content may inform agent output but can never cross into an action without
+               being re-originated as a verified instruction on a Thought channel
+      persistent: true
+      acl:
+        - role: god
+          nicks: [KALI, KRISHNA]
+          may: [read, write]
+        - role: spider
+          nicks: [NATASHA, CHARLOTTE]
+          may: [read]
+        - role: owner
+          nicks: [owner]
+          may: [read, write]
+        - role: vault-bridge
+          nicks: [vault-bridge]
+          may: [read]
+      rate_limit:
+        tokens: 30
+        window_s: 60

@@ -1,0 +1,50 @@
+# HELIXos vault-bridge — SOLE WRITER of the Obsidian-Brain vault (ADR-001 §2.2,
+# audit AUD-H9). Subscribes to journal events and renders markdown views
+# (Active_Projects/, Akosh_Registry.md, Council_Ledgers.md); humans write only
+# to Obsidian-Brain/inbox/, which is journaled as input events.
+#
+# *** ACTIVATES AT M3 *** — the vault_bridge module is scheduled M3 work and
+# does not exist in the M0 tree. This unit is production-complete and installs
+# today, but MUST NOT be enabled until the module lands:
+#     /usr/bin/env python3 -m vault_bridge   (from the repo checkout at /opt/helixos)
+# PYTHONPATH below mirrors conftest.py's six code dirs (SPEC §1).
+#
+# Install:  cp infra/systemd/helix-vault-bridge.service /etc/systemd/system/
+#           systemctl daemon-reload   # enable --now only at M3
+[Unit]
+Description=HELIXos vault-bridge (sole Obsidian-Brain writer; activates at M3)
+Documentation=file:/opt/helixos/docs/adr/ADR-001-journal-source-of-truth.md
+# Renders views anchored to KNOTstore pointers, so start after the sidecar.
+After=helix-knotcore-sidecar.service
+Wants=helix-knotcore-sidecar.service
+
+[Service]
+Type=simple
+User=helixos
+Group=helixos
+WorkingDirectory=/opt/helixos
+Environment=HELIXOS_JOURNAL_PATH=/var/lib/helixos/helixos-journal.jsonl
+Environment=HELIXOS_SIDECAR_SOCKET=/run/helixos/knotcore.sock
+Environment=HELIXOS_LOG_LEVEL=INFO
+Environment=PYTHONPATH=/opt/helixos/aigent-os-kernel/src/runtime:/opt/helixos/aigent-os-kernel/src/memory:/opt/helixos/aigent-os-kernel/src/BABEL:/opt/helixos/aigent-os-kernel/KNOTstore_bin:/opt/helixos/aigent-os-kernel/KNOTstore_bin/sidecar:/opt/helixos/aigent-os-kernel/orchestrator
+ExecStart=/usr/bin/env python3 -m vault_bridge
+Restart=always
+RestartSec=2
+
+# --- Hardening ---------------------------------------------------------------
+NoNewPrivileges=true
+ProtectSystem=strict
+# Writable: journal file (this service is the single writer under flock,
+# SPEC §3.7) and the Obsidian vault it renders. Socket dir for the sidecar.
+ReadWritePaths=/var/lib/helixos /opt/helixos/Obsidian-Brain /run/helixos
+PrivateTmp=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,77 @@
+{
+  "schema": "helixos-golden-vectors/1",
+  "warning": "TEST-ONLY key material — dev keys pinned so golden tests are deterministic; never use in production (secrets only from env, SPEC §3.10).",
+  "determinism": "Each vector is generated after knotcore_sim.reset_store() (first slot => ptr 0000000000000000) with the TEST-ONLY _now/_nonce hooks of generate_triangulated_instruction pinning 'ts' and 'nonce_hex'. HMAC tags and Ed25519 signatures are both deterministic per (key, message), so the full bus line is pinned in expected_bus_line_prefix.",
+  "vectors": [
+    {
+      "name": "hmac-read-basic",
+      "mode": "hmac",
+      "key_material": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "payload": "hello world",
+      "verb": "READ",
+      "ts": 1700000000,
+      "nonce_hex": "000102030405060708090a0b",
+      "expected_bus_line_prefix": "[ 0000000000000000 | READ | #IxrsAgW0Hq_Unj5jMgMhjA ]"
+    },
+    {
+      "name": "hmac-exec-diagnostics",
+      "mode": "hmac",
+      "key_material": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "payload": "run diagnostics",
+      "verb": "EXEC",
+      "ts": 1700000123,
+      "nonce_hex": "101112131415161718191a1b",
+      "expected_bus_line_prefix": "[ 0000000000000000 | EXEC | #IoVBTlV-n-w223a0DqnUJQ ]"
+    },
+    {
+      "name": "hmac-write-unicode",
+      "mode": "hmac",
+      "key_material": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+      "payload": "λ-メモリ-✓",
+      "verb": "WRITE",
+      "ts": 1700005000,
+      "nonce_hex": "a0a1a2a3a4a5a6a7a8a9aaab",
+      "expected_bus_line_prefix": "[ 0000000000000000 | WRITE | #h19eFOEiT4I9da1_0NWsmQ ]"
+    },
+    {
+      "name": "hmac-archive-null",
+      "mode": "hmac",
+      "key_material": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "payload": "null",
+      "verb": "ARCHIVE",
+      "ts": 1700010000,
+      "nonce_hex": "ffffffffffffffffffffffff",
+      "expected_bus_line_prefix": "[ 0000000000000000 | ARCHIVE | #I7nr14x9GLAp4STf9lII8A ]"
+    },
+    {
+      "name": "ed25519-exec-boot",
+      "mode": "ed25519",
+      "key_material": "4242424242424242424242424242424242424242424242424242424242424242",
+      "payload": "boot sequence",
+      "verb": "EXEC",
+      "ts": 1700002000,
+      "nonce_hex": "202122232425262728292a2b",
+      "expected_bus_line_prefix": "[ 0000000000000000 | EXEC | #vYypocm3KalEipvdz4ph7fuRnmoZ_bUqxUG8J0mnG0g6w5OX736hFw4mwcXBboEyypkkGE_GZJm3DwOlQNCsCA ]"
+    },
+    {
+      "name": "ed25519-read-status",
+      "mode": "ed25519",
+      "key_material": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "payload": "status report",
+      "verb": "READ",
+      "ts": 1700003000,
+      "nonce_hex": "303132333435363738393a3b",
+      "expected_bus_line_prefix": "[ 0000000000000000 | READ | #_yEGi8UsM2Ln1zVNY9RFz0YIpxPO8o-Yhwvx1StDffJscFUnux7GRrRQ2Dw7cdDNsOB0IrCR6IBNGBV0hLh2Bw ]"
+    },
+    {
+      "name": "ed25519-write-long",
+      "mode": "ed25519",
+      "key_material": "abababababababababababababababababababababababababababababababab",
+      "payload": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "verb": "WRITE",
+      "ts": 1700004000,
+      "nonce_hex": "404142434445464748494a4b",
+      "expected_bus_line_prefix": "[ 0000000000000000 | WRITE | #BeKKahXxrMFoYc3ncO6UlOUxQWW_3yIZ82iI042M9ReAp1HJzLBkfPs5b9bih-EZUZxQWPCg9F_hd14Imym2BQ ]"
+    }
+  ]
+}

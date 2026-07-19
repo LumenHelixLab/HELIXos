@@ -1,9 +1,27 @@
+# HELIXos .gitignore — M0 (owner: Stage-2 integrator)
+
+# Python caches & tool caches
 __pycache__/
 *.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
 .venv/
 venv/
-.env
-*.db
-*.db-wal
-*.db-shm
-.pytest_cache/
+
+# Runtime artifacts — never commit local state
+*.sock
+*.jsonl          # event journals (e.g. helixos-journal.jsonl) are local node state
+*.log
+
+# OS noise
+.DS_Store
+Thumbs.db
