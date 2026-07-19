@@ -1,5 +1,48 @@
+# HELIXos — project metadata & tool configuration (owner: Agent E, SPEC §1).
+# M0 is a flat import namespace (conftest.py puts the six code dirs on
+# sys.path); there is intentionally no [build-system]/package discovery yet —
+# packaging lands with the deployment milestone. This file exists for tool
+# config (pytest, ruff, mypy) and canonical project metadata.
+
+[project]
+name = "helixos"
+version = "0.2.0-m0"            # v2.0 lineage, M0 hardening pass (audit §7)
+description = "HELIXos — agentic operating system over the Triangulated Bus; M0 specification-hardening pass"
+readme = "README.md"
+requires-python = ">=3.11"      # dev env: 3.12 (SPEC preamble)
+license = { text = "Proprietary" }
+dependencies = []               # stdlib-only by design (SPEC preamble)
+
+[project.optional-dependencies]
+# Production signing mode (Ed25519) per ADR-004 §3.3; dev/HMAC mode is stdlib-only.
+crypto = ["cryptography>=44"]
+test = ["pytest>=9", "cryptography>=44"]
+lint = ["ruff"]
+typecheck = ["mypy"]
+
 [tool.pytest.ini_options]
-# Make the repo root importable so `import helix_gate` works under pytest.
-pythonpath = ["."]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".git", ".pytest_cache", "__pycache__"]
+
+[tool.ruff.lint]
+# Sensible M0 gate: pyflakes + pycodestyle errors + bugbear-style basics via pylint conventions kept off.
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+    "E501",   # line length enforced by formatter, not the linter gate
+    "SIM108", # ternary suggestions are style, not correctness
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["signers", "knotcore_sim", "KNOT_API_WRAPPER", "rpc_protocol", "sidecar_server", "sidecar_client", "dispatcher", "journal", "epochs", "ten_squared_fsm", "possession"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+# M0: type-check is advisory in CI (reports, does not block); strictness ramps at M1.
