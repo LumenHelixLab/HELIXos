@@ -1,0 +1,40 @@
+# HELIXos IRC daemon — Ergo (build-vs-buy decision, ADR-003). Activates at M2:
+# the Layer-B bus transport (Triangulated Bus lines, SPEC §2). Until then the
+# bus runs in-process and this unit is installed but not enabled.
+#
+# Install:  cp infra/systemd/helix-ircd.service /etc/systemd/system/
+#           install -m 0640 -o ergo -g ergo configs/ergo/ergo.yaml /etc/helixos/ergo.yaml
+#           systemctl daemon-reload && systemctl enable --now helix-ircd
+# Requires: Ergo binary at /usr/local/bin/ergo, user `ergo`, config at
+#           /etc/helixos/ergo.yaml (TLS + SASL per ADR-003 §2.3).
+[Unit]
+Description=HELIXos IRC daemon (Ergo) — M2 bus transport (ADR-003)
+Documentation=https://ergo.chat/about file:/opt/helixos/docs/adr/ADR-003-ircd-build-vs-buy.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ergo
+Group=ergo
+ExecStart=/usr/local/bin/ergo run --conf /etc/helixos/ergo.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=2
+TimeoutStopSec=15
+
+# --- Hardening ---------------------------------------------------------------
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# Ergo needs only its listeners (6697 TLS / 6667 localhost) — no other units
+# depend on its filesystem; state dir per /etc/helixos/ergo.yaml datastore.
+
+[Install]
+WantedBy=multi-user.target

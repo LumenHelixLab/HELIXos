@@ -1,0 +1,45 @@
+# HELIXos knotcore sidecar — out-of-process Unix-socket RPC wrapper for the
+# proprietary knotcore store (ADR-002; SPEC §3.4). A crash here must never take
+# down an agent: supervisor restarts, clients circuit-break.
+#
+# Install:  cp infra/systemd/helix-knotcore-sidecar.service /etc/systemd/system/
+#           systemctl daemon-reload && systemctl enable --now helix-knotcore-sidecar
+# Requires: user `helixos`, repo checkout at /opt/helixos.
+[Unit]
+Description=HELIXos knotcore sidecar (Unix-socket RPC, ADR-002)
+Documentation=file:/opt/helixos/docs/adr/ADR-002-knotcore-sidecar.md
+After=local-fs.target
+
+[Service]
+Type=simple
+User=helixos
+Group=helixos
+# Socket lives in the RuntimeDirectory (/run/helixos), NOT the default /tmp
+# path (SPEC §3.4) — PrivateTmp + ProtectSystem=strict make /run/helixos the
+# only writable runtime location; clients read HELIXOS_SIDECAR_SOCKET.
+Environment=HELIXOS_SIDECAR_SOCKET=/run/helixos/knotcore.sock
+Environment=HELIXOS_LOG_LEVEL=INFO
+RuntimeDirectory=helixos
+RuntimeDirectoryMode=0750
+ExecStart=/usr/bin/env python3 /opt/helixos/aigent-os-kernel/KNOTstore_bin/sidecar/sidecar_server.py
+Restart=always
+RestartSec=2
+# Graceful SIGTERM per SPEC §3.4.
+KillSignal=SIGTERM
+TimeoutStopSec=10
+
+# --- Hardening ---------------------------------------------------------------
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/run/helixos
+PrivateTmp=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
