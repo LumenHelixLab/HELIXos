@@ -130,8 +130,11 @@ demo to see the full tour.
 
 ## Documentation
 
-- [`docs/SPECIFICATION.md`](docs/SPECIFICATION.md) — the v3.0 Master Engineering
-  Handoff (full architecture, taxonomy, linguistic protocols).
+- [`docs/WHITEPAPER.md`](docs/WHITEPAPER.md) — **Master Engineering Handoff v4.0**:
+  what's built (Gate 2), the contracts, and the forward spec for the next
+  operation (the Runtime Agent Pipeline). Start here.
+- [`docs/SPECIFICATION.md`](docs/SPECIFICATION.md) — the v3.0 architecture handoff
+  (full four-tier design, agent taxonomy, linguistic protocols).
 - [`docs/GATES.md`](docs/GATES.md) — the security-gate model and the Gate 2
   reviewer disposition (13 findings → closures).
 
