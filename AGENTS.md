@@ -26,6 +26,14 @@ pytest -q                    # 48 tests, ~5s
 python -m helix_gate.demo    # end-to-end + fault-injection tour
 ```
 
+## Contributor subagents
+
+`.claude/agents/helix/` defines five specialist Claude Code subagents you can
+delegate to: **ARGUS** (read-only scout), **OGUN** (bounded builder), **THOTH**
+(cited research), **ATHENA** (read-only critique), **PTAH** (design/spec). A
+`UserPromptSubmit` hook (`.claude/hooks/`) auto-loads relevant files by keyword.
+See `.claude/README.md`.
+
 ## Hard constraints
 
 - **Never claim unimplemented behavior works.** Stubs stay honest; a component is

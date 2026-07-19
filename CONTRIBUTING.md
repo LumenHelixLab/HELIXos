@@ -26,6 +26,15 @@ cd HELIXos
 pip install -r requirements.txt
 ```
 
+## Contributor toolkit (Claude Code)
+
+If you use [Claude Code](https://claude.com/claude-code), this repo ships a
+`.claude/` toolkit ([`.claude/README.md`](.claude/README.md)): five specialist
+subagents named to the HELIXos taxonomy — **ARGUS** (read-only scout), **OGUN**
+(builder), **THOTH** (research), **ATHENA** (critique), **PTAH** (design/spec) —
+plus a keyword context-loader that auto-injects relevant files. It's optional and
+adapted from [operator-kit](https://github.com/wrg32786/operator-kit) (MIT).
+
 ## Verify before you open a PR
 
 ```bash
