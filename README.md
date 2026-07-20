@@ -21,6 +21,42 @@ chooses Ergo as the M2 bus daemon (ADR-003), and lands the platform
 scaffolding — CI gates, config, systemd units, and runbooks (AUD-H8) — that
 every later milestone builds on.
 
+## Milestones
+
+| Milestone | Theme | Status |
+|---|---|---|
+| M0 | Specification hardening: corrected wrapper/possession, sidecar, journal, FSM, docs, platform | ✅ Done (139 tests) |
+| M1 | Core foundation: AKASH braid signatures, FSM executor, snapshots, chaos-tested recovery ([SPEC-M1.md](SPEC-M1.md), [acceptance](docs/m1-acceptance.md)) | ✅ Done (290 tests total) |
+| M2 | Bus layer: Ergo IRCd, partitions (ADR-003) | ⬜ Planned |
+| M3 | Agents + human cognitive UI: Quaternity, LangGraph orchestration, lease timers, Obsidian vault | ⬜ Planned |
+
+## M1 — Core Foundation (current)
+
+M1 lands the runtime core on top of the hardened M0 bus (SPEC-M1.md):
+
+- **`aigent-os-kernel/src/akash/braid.py`** — verifiable **AKASH braid
+  signatures**: one hash-chained strand per agent, woven by crossings;
+  `sign_root`/`verify_root_signature` (domain-separated, HMAC-dev /
+  Ed25519-prod) and `anchor_braid`/`verify_anchor` — the braid root anchored
+  on the bus as an ordinary `ARCHIVE` instruction.
+- **`aigent-os-kernel/src/runtime/executor.py`** — `FSMExecutor`: bus line →
+  fail-closed verify → TEN-SQUARED transition → journaled → braid-committed;
+  `instruction.rejected` taxonomy (invalid/stale/replay/phase),
+  `backend.unavailable` chaos contract, `collapse()` (Projective Collapse)
+  and `recover()` from snapshot + journal.
+- **`aigent-os-kernel/src/memory/snapshot.py`** — atomic, hash-pinned,
+  optionally Ed25519-signed checkpoints (seq, epoch, FSM state, braid root,
+  strand tips) with fail-closed load and chain-verified journal replay.
+- **Chaos-tested recovery** (`tests/test_m1_chaos.py`, 6 tests): 10k-instruction
+  soak, sidecar SIGKILL mid-stream + resume, phase-bump forward security,
+  randomized recovery equivalence, tampered-journal and tampered-braid
+  evidence. Acceptance report: `docs/m1-acceptance.md`.
+
+```bash
+python3 -m pytest            # 290 tests (M0 139 + braid 73 + executor/snapshot 72 + M1 acceptance 6)
+python3 scripts/demo_m1.py   # "M1 SMOKE: Core Foundation" — 51 checks, exit 0
+```
+
 ## Architecture
 
 ```
@@ -52,22 +88,25 @@ every later milestone builds on.
 ```
 HELIXos/
 ├── SPEC.md                    # binding M0 spec (single source of truth)
-├── conftest.py                # flat import namespace: six code dirs on sys.path
+├── SPEC-M1.md                 # binding M1 addendum (braid, executor, snapshots)
+├── conftest.py                # flat import namespace: seven code dirs on sys.path
 ├── pyproject.toml             # metadata + pytest/ruff/mypy config
 ├── aigent-os-kernel/
-│   ├── src/runtime/ten_squared_fsm.py        # 100-state FSM + benchmark
-│   ├── src/memory/{journal,epochs}.py        # system of record + fencing
+│   ├── src/runtime/{ten_squared_fsm,executor}.py  # 100-state FSM + FSM executor
+│   ├── src/memory/{journal,epochs,snapshot}.py    # system of record + fencing + checkpoints
 │   ├── src/BABEL/dispatcher.py               # command grammar + audit
+│   ├── src/akash/braid.py                    # AKASH braid signatures (M1)
 │   ├── KNOTstore_bin/{signers,knotcore_sim,KNOT_API_WRAPPER}.py
 │   ├── KNOTstore_bin/sidecar/{rpc_protocol,sidecar_server,sidecar_client}.py
 │   └── orchestrator/possession.py            # KrishnaManifestor
-├── tests/                     # pytest suite (+ vectors/golden_vectors.json)
+├── tests/                     # pytest suite (+ vectors/golden_vectors.json, test_m1_chaos.py)
 ├── configs/helixos.yaml       # documented node config (secrets: env only)
 ├── configs/helixos.schema.json# JSON Schema 2020-12 for the config
 ├── docs/                      # glossary, latency budgets, ADR-001..004
 ├── infra/systemd/             # sidecar, ircd (Ergo), vault-bridge units
 ├── infra/runbooks/            # sidecar-outage, projective-collapse, key-rotation
-├── scripts/demo_m0.py         # end-to-end M0 demo (lands in Stage 2)
+├── scripts/demo_m0.py         # end-to-end M0 demo
+├── scripts/demo_m1.py         # end-to-end M1 demo ("M1 SMOKE: Core Foundation")
 ├── HELIXvault/                # agent toolbelt homes (M2/M3; skeleton)
 ├── Obsidian-Brain/            # human cognitive UI (skeleton; inbox/ live)
 └── .github/workflows/ci.yml   # lint / type-check / test / latency-gate
