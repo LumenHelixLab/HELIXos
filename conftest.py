@@ -16,11 +16,12 @@ from pathlib import Path
 _ROOT = Path(__file__).resolve().parent
 _KERNEL = _ROOT / "aigent-os-kernel"
 
-# The six code directories of SPEC §1, in stable order.
+# The code directories of SPEC §1 (+ SPEC-M1 §1 akash), in stable order.
 _CODE_DIRS = (
     _KERNEL / "src" / "runtime",       # ten_squared_fsm.py
     _KERNEL / "src" / "memory",        # journal.py, epochs.py
     _KERNEL / "src" / "BABEL",         # dispatcher.py
+    _KERNEL / "src" / "akash",         # braid.py (SPEC-M1 §1)
     _KERNEL / "KNOTstore_bin",         # signers.py, knotcore_sim.py, KNOT_API_WRAPPER.py
     _KERNEL / "KNOTstore_bin" / "sidecar",  # rpc_protocol.py, sidecar_server.py, sidecar_client.py
     _KERNEL / "orchestrator",          # possession.py
